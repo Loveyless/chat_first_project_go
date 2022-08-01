@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -18,7 +19,7 @@ type Server struct {
 	Message chan string
 }
 
-//广播上线消息
+//广播消息
 func (s *Server) BroadCast(user *User, msg string) {
 	//定义消息
 	sendMsg := "[" + user.Addr + "]" + user.Name + msg + "\n"
@@ -42,6 +43,7 @@ func (s *Server) ListenMessager() {
 	}
 }
 
+//业务
 func (s *Server) Hander(conn net.Conn) {
 	//当前连接的业务
 	// fmt.Println("连接建立成功")
@@ -58,6 +60,36 @@ func (s *Server) Hander(conn net.Conn) {
 
 	//广播上线消息
 	s.BroadCast(user, "online")
+
+	//接收用户传递的消息
+	go func() {
+
+		buf := make([]byte, 4096)
+
+		for {
+			//允许从当前连接读消息 成功返回字节数 失败err
+			n, err := conn.Read(buf)
+			//如果读取的是0那么说明用户关闭了？
+			if n == 0 {
+				s.BroadCast(user, "close")
+				return
+			}
+			//发生错误  这个io.EOF不太懂 表示文件末尾？
+			if err != nil && err != io.EOF {
+				fmt.Println(user, err)
+				return
+			}
+
+			//提取用户的消息 去除("\n") 因为BroadCast会加\n 这里n是否和len(buf)一个意思呢？
+			// msg := string(buf[:n-1])
+			msg := string(buf[:len(buf)-1])
+
+			//广播消息
+			s.BroadCast(user, msg)
+
+		}
+
+	}()
 
 	//当前handler阻塞 但是这里好像不写也没事 日后再看
 	select {}

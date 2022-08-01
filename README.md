@@ -3,6 +3,26 @@
 server.go   一些配置项
 ```
 
+## v0.3 用户消息广播功能
+server.go中有一个go程用来接收用户发送的消息 向用户读
+![](https://cdn.jsdelivr.net/gh/Loveyless/img-clouding/img/20220802033312.png)
+user.go中有一个go程用来写向用户写
+![](https://cdn.jsdelivr.net/gh/Loveyless/img-clouding/img/20220802033540.png)
+
+所以是一个读写分离的模型 没太懂 还需要理解
+
+
+启动步骤
+1. go run .\main.go .\server.go .\user.go 或者 build
+2. 开多个命令行来测试上线 telnet localhost 8888
+3. 随便输入数据
+
+问题 我会给我自己也广播出来数据 不过这个应该好解决
+```msg := string(buf[:n-1])```这个和```msg := string(buf[:len(buf)-1])```是不是没区别？
+不过好像n不行
+
+win只能输入一个字符 尝试检测用户按回车 但是失败了 写不来
+
 
 ## v0.2 用户上线以及广播功能
 ![](https://cdn.jsdelivr.net/gh/Loveyless/img-clouding/img/20220802014908.png)
@@ -11,6 +31,8 @@ server.go   一些配置项
 增加了上线提示
 还有锁的概念
 具体看代码
+
+我觉得面向对象也不难就是太绕了 但是一个一个理解还是可以的
 
 启动步骤
 1. go run .\main.go .\server.go .\user.go 或者 build
