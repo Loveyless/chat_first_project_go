@@ -1,18 +1,23 @@
-
-
-
-
-
-
 ## 目录
 ```
 server.go   一些配置项
 ```
 
 
+## v0.2 用户上线以及广播功能
+![](https://cdn.jsdelivr.net/gh/Loveyless/img-clouding/img/20220802014908.png)
+
+增加了根据conn创建用户
+增加了上线提示
+还有锁的概念
+具体看代码
+
+启动步骤
+1. go run .\main.go .\server.go .\user.go 或者 build
+2. 开多个命令行来测试上线 telnet localhost 8888
 
 
-## v0.1版本
+## v0.1 基础server构建
 启动步骤
 1. go build -o server.exe main.go server.go 或者 go run main.go server.go
 2. 如果build了就 ./server.exe打开文件 run就无需操作
