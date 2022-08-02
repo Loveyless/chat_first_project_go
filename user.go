@@ -1,6 +1,8 @@
 package main
 
-import "net"
+import (
+	"net"
+)
 
 type User struct {
 	// 名字
@@ -40,7 +42,18 @@ func (u *User) Offline() {
 
 //处理消息
 func (u *User) DoMessage(msg string) {
-	u.Server.BroadCast(u, msg)
+	//如果用户输入的是w 那么查询当前在线用户
+	if msg == "who" {
+		u.Server.maplock.Lock()
+		for _, user := range u.Server.OnlienMap {
+			onlineMsg := "[" + user.Addr + "]" + user.Name + ": now online\n"
+			u.C <- onlineMsg
+		}
+		u.Server.maplock.Unlock()
+	} else {
+		//输入的不是w就正常发布消息
+		u.Server.BroadCast(u, msg)
+	}
 }
 
 // 监听当前User channel方法 一旦有消息 就直接发送给对端客户端
@@ -48,8 +61,8 @@ func (u *User) ListenMessage() {
 	for {
 		// 不断的从用户的管道中读数据
 		msg := <-u.C
-		// 一旦有消息 写入数据 这里用byte切片不太理解 怎么不用string 我懂了 这个函数直接接byte 这里中文cmd会乱码 操
-		u.Conn.Write([]byte("have new msg" + msg))
+		// 一旦有消息 写入数据 这里用byte切片不太理解 怎么不用string 我懂了 这个函数直接接byte 这里中文cmd会乱码
+		u.Conn.Write([]byte(msg))
 	}
 }
 

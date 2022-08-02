@@ -72,10 +72,11 @@ func (s *Server) Hander(conn net.Conn) {
 			}
 
 			//提取用户的消息 去除("\n") 因为BroadCast会加\n 这里n是否和len(buf)一个意思呢？
-			// msg := string(buf[:n-1])
-			msg := string(buf[:len(buf)-1])
+			// msg := string(buf[:n-2]) //这里-2才是取消换行符 //这win比较特殊 很麻烦
+			//装了nc好像是len-1就能取消换行 目前不太懂这个n是什么和len有什么区别 nc好像就是测socket的流的 我写的好像就是socket
+			msg := string(buf[:n-1])
 
-			//广播消息
+			//处理+广播消息
 			user.DoMessage(msg)
 
 		}
