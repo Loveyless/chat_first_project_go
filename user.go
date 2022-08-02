@@ -11,6 +11,36 @@ type User struct {
 	C chan string
 	// 当前用户的连接
 	Conn net.Conn
+	//当前用户关联的Server
+	Server *Server
+}
+
+//上线功能
+func (u *User) Online() {
+	u.Server.maplock.Lock() //先锁 不太明白 弹幕说这里的map不是线程安全的 不过查到好像加锁就是安全的了
+	//2.添加用户到map
+	u.Server.OnlienMap[u.Name] = u
+	u.Server.maplock.Unlock() //解锁 关于安全map的说明 https://zhuanlan.zhihu.com/p/449078860
+
+	//广播上线消息
+	u.Server.BroadCast(u, "online")
+}
+
+//下线功能
+func (u *User) Offline() {
+
+	u.Server.maplock.Lock() //先锁 不太明白 弹幕说这里的map不是线程安全的 不过查到好像加锁就是安全的了
+	//2.添加用户到map
+	delete(u.Server.OnlienMap, u.Name)
+	u.Server.maplock.Unlock() //解锁 关于安全map的说明 https://zhuanlan.zhihu.com/p/449078860
+
+	//广播下线消息
+	u.Server.BroadCast(u, "offline")
+}
+
+//处理消息
+func (u *User) DoMessage(msg string) {
+	u.Server.BroadCast(u, msg)
 }
 
 // 监听当前User channel方法 一旦有消息 就直接发送给对端客户端
@@ -24,17 +54,18 @@ func (u *User) ListenMessage() {
 }
 
 //创建一个用户的api
-func NewUser(conn net.Conn) *User {
+func NewUser(conn net.Conn, server *Server) *User {
 
 	// 默认用户名是客户端地址
 	// 拿到地址
 	userAddr := conn.RemoteAddr().String()
 
 	user := &User{
-		Name: userAddr,
-		Addr: userAddr,
-		C:    make(chan string),
-		Conn: conn,
+		Name:   userAddr,
+		Addr:   userAddr,
+		C:      make(chan string),
+		Conn:   conn,
+		Server: server,
 	}
 
 	// 开线程去监听user channel消息

@@ -45,21 +45,12 @@ func (s *Server) ListenMessager() {
 
 //业务
 func (s *Server) Hander(conn net.Conn) {
-	//当前连接的业务
-	// fmt.Println("连接建立成功")
 
 	//用户上线了 将用户加入到OnlineMap中
 
 	//1.首先创建user
-	user := NewUser(conn)
-
-	s.maplock.Lock() //先锁 不太明白 弹幕说这里的map不是线程安全的 不过查到好像加锁就是安全的了
-	//2.添加用户到map
-	s.OnlienMap[user.Name] = user
-	s.maplock.Unlock() //解锁 关于安全map的说明 https://zhuanlan.zhihu.com/p/449078860
-
-	//广播上线消息
-	s.BroadCast(user, "online")
+	user := NewUser(conn, s) //这里传入当前Server的地址
+	user.Online()
 
 	//接收用户传递的消息
 	go func() {
@@ -69,9 +60,9 @@ func (s *Server) Hander(conn net.Conn) {
 		for {
 			//允许从当前连接读消息 成功返回字节数 失败err
 			n, err := conn.Read(buf)
-			//如果读取的是0那么说明用户关闭了？
+			//如果读取的是0那么说明用户关闭了 也就是下线
 			if n == 0 {
-				s.BroadCast(user, "close")
+				user.Offline()
 				return
 			}
 			//发生错误  这个io.EOF不太懂 表示文件末尾？
@@ -85,7 +76,7 @@ func (s *Server) Hander(conn net.Conn) {
 			msg := string(buf[:len(buf)-1])
 
 			//广播消息
-			s.BroadCast(user, msg)
+			user.DoMessage(msg)
 
 		}
 
@@ -112,7 +103,7 @@ func (s *Server) Start() {
 	go s.ListenMessager()
 
 	for {
-		//accept 监听请求 //这个会阻塞
+		//accept 监听用户连接请求 //这个会阻塞
 		conn, err := Listenr.Accept()
 		if err != nil {
 			fmt.Println("listenr accept err:", err)
