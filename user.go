@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"strings"
 )
 
 type User struct {
@@ -42,6 +43,7 @@ func (u *User) Offline() {
 
 //处理消息
 func (u *User) DoMessage(msg string) {
+
 	//如果用户输入的是w 那么查询当前在线用户
 	if msg == "who" {
 		u.Server.maplock.Lock()
@@ -50,8 +52,28 @@ func (u *User) DoMessage(msg string) {
 			u.C <- onlineMsg
 		}
 		u.Server.maplock.Unlock()
+
+		//如果长度大于7 并且前面7个字符为rename
+	} else if len(msg) > 7 && msg[:7] == "rename|" {
+		//取到要改的名称
+		newName := strings.Split(msg, "|")[1] //split方法 和 js类似
+		//判断是否被占用
+		_, ok := u.Server.OnlienMap[newName] //拿不拿得到？我去 这样循环都不用写
+		if ok {
+			u.Server.BroadCast(u, "username is occupying")
+		} else {
+			u.Server.maplock.Lock()
+			// u.Server.OnlienMap[u.Name].Name = newName //不能这样？ 他们说map的key改不了 好像这里的key是用名字的 怪不得不能这样
+			delete(u.Server.OnlienMap, u.Name)
+			u.Server.OnlienMap[newName] = u //这里先赋值获取 但是当前u姓名还没改 以后改也没事 因为是传指针
+			u.Server.maplock.Unlock()
+
+			u.Name = newName
+			u.Server.BroadCast(u, "update name over!")
+		}
+
 	} else {
-		//输入的不是w就正常发布消息
+		//输入的不是w或者改名就正常发布消息
 		u.Server.BroadCast(u, msg)
 	}
 }

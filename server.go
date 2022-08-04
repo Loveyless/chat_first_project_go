@@ -50,6 +50,7 @@ func (s *Server) Hander(conn net.Conn) {
 
 	//1.首先创建user
 	user := NewUser(conn, s) //这里传入当前Server的地址
+	//上线 把user传入OnlineMap
 	user.Online()
 
 	//接收用户传递的消息
