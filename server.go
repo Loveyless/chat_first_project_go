@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -53,6 +54,9 @@ func (s *Server) Hander(conn net.Conn) {
 	//上线 把user传入OnlineMap
 	user.Online()
 
+	// 监听用户是否活跃的channel
+	isLive := make(chan bool)
+
 	//接收用户传递的消息
 	go func() {
 
@@ -80,12 +84,41 @@ func (s *Server) Hander(conn net.Conn) {
 			//处理+广播消息
 			user.DoMessage(msg)
 
+			//发送消息后 向用户活跃channel发送一个消息
+			isLive <- true
+
 		}
 
 	}()
 
 	//当前handler阻塞 但是这里好像不写也没事 日后再看
-	select {}
+	for {
+		select {
+		case <-isLive:
+			//说明当前用户活跃
+			//这里有个技巧 如果isLive执行 那么下面的<-time.After(time.Second * 10):也会执行
+			//time.After()会重置定时器 活跃就重置 不一定能进去 但是会执行case的语句
+		case <-time.After(time.Second * 10): //go中的定时器
+
+			//已经超时 将当前User强制关闭
+			user.C <- "You have been kicked"
+
+			//关闭管道 销毁资源 关闭之前等一会 要不然用户可能收不到消息
+			time.Sleep(time.Second * 1)
+			close(user.C)
+
+			//列表中删除用户 但是前面读取的时候 如果读的消息是0那么自动下线 所以下面关闭连接后会自动踢
+			s.maplock.Lock()
+			delete(s.OnlienMap, user.Name)
+			s.maplock.Unlock()
+
+			//关闭连接
+			conn.Close()
+
+			//退出当前Handler
+			return //或者runtime.Goexit() //这个函数没学
+		}
+	}
 }
 
 //启动服务器的接口
