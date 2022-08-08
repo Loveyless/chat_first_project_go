@@ -23,7 +23,7 @@ type Server struct {
 //广播消息
 func (s *Server) BroadCast(user *User, msg string) {
 	//定义消息
-	sendMsg := "[" + user.Addr + "]" + user.Name + msg + "\n"
+	sendMsg := "[" + user.Addr + "]" + user.Name + ":" + msg + "\n"
 	// 发送到广播管道中
 	s.Message <- sendMsg
 }
@@ -98,7 +98,7 @@ func (s *Server) Hander(conn net.Conn) {
 			//说明当前用户活跃
 			//这里有个技巧 如果isLive执行 那么下面的<-time.After(time.Second * 10):也会执行
 			//time.After()会重置定时器 活跃就重置 不一定能进去 但是会执行case的语句
-		case <-time.After(time.Second * 10): //go中的定时器
+		case <-time.After(time.Second * 20): //go中的定时器
 
 			//已经超时 将当前User强制关闭
 			user.C <- "You have been kicked"
@@ -127,8 +127,10 @@ func (s *Server) Start() {
 	//socket listen  //这里net.Listenr第二个参数需要拼接 因为要自定义
 	Listenr, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Ip, s.Port))
 	if err != nil {
-		fmt.Println("服务器启动失败", err)
+		fmt.Println("Server error: ", err)
 		return
+	} else {
+		fmt.Println("Server started successfully")
 	}
 
 	//close listen socket

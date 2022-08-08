@@ -4,8 +4,15 @@ server.go   一些配置项
 user.go   用户的一些操作
 ```
 
+## v.08私聊功能
+消息格式 to|xxname|messages
+表示私聊发给xxname
+可以再发消息之前who一下
+```remoteName := strings.Split(msg, "|")[1]```获取用户名用的split所以用户名里不能有|
+
+
 ## v.07 超时强踢
-超时10秒后 超时强踢
+超时20秒后 超时强踢
 
 
 ## v0.6 修改用户名

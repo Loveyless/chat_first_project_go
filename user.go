@@ -44,7 +44,7 @@ func (u *User) Offline() {
 //处理消息
 func (u *User) DoMessage(msg string) {
 
-	//如果用户输入的是w 那么查询当前在线用户
+	//如果用户输入的是who 那么查询当前在线用户
 	if msg == "who" {
 		u.Server.maplock.Lock()
 		for _, user := range u.Server.OnlienMap {
@@ -72,6 +72,33 @@ func (u *User) DoMessage(msg string) {
 			u.Server.BroadCast(u, "update name over!")
 		}
 
+		//私聊消息
+	} else if len(msg) > 4 && msg[:3] == "to|" {
+		//消息格式 to|张三|你好xxxxx
+		//1.获取对方用户名
+		remoteName := strings.Split(msg, "|")[1]
+		if remoteName == "" {
+			u.C <- "import username please like to|username|message \n"
+			return
+		}
+		//2.根据用户名得到对方的user对象
+		sideUser, ok := u.Server.OnlienMap[remoteName]
+		if !ok {
+			u.C <- "user is not undefined"
+			return
+		}
+		//3.获取消息内容 通过对方的user对象 发送内容
+		// if msg = strings.Split(msg, "|")[2]; msg == "" {
+		// 	u.C <- "you not import message \n"
+		// 	return
+		// }
+		context := strings.Split(msg, "|")[2] //上面注释掉的写法不行 应该是因为if不能那样写
+		if context == "" {
+			u.C <- "you not import message \n"
+			return
+		}
+		message := u.Name + ":to you message:" + strings.Split(msg, "|")[2] + "\n"
+		sideUser.C <- message
 	} else {
 		//输入的不是w或者改名就正常发布消息
 		u.Server.BroadCast(u, msg)
