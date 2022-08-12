@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 )
@@ -33,9 +34,25 @@ func NewClient(serverIp string, serverPort int) *Client {
 	return client
 }
 
+var serverIp string
+
+var serverPort int
+
+//解析命令行 所以解析要在mian之前 so 写一个init函数
+func init() {
+	// 会解析-ip之后的数据 ./client -ip 127.0.0.1
+	// 指针 解析前缀 默认值 help的说明 如：go run ./client.go -h
+	flag.StringVar(&serverIp, "ip", "127.0.0.1", "set server ip")
+	flag.IntVar(&serverPort, "port", 8888, "set server port")
+}
+
 func main() {
 
-	client := NewClient("127.0.0.1", 8000)
+	//命令行解析 解析命令行数据
+	flag.Parse()
+
+	//构造连接
+	client := NewClient(serverIp, serverPort)
 
 	if client == nil {
 		fmt.Println(">>>>>>>client server err......")

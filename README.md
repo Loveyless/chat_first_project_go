@@ -9,9 +9,12 @@ user.go   用户的一些操作
 
 1. 建立连接
   创建一个client.go 来建立连接
+
   首先```go run ./main.go server.go user.go```
+
   然后```go run ./client.go```
 
+2. 命令行解析
 
 
 ## v.08私聊功能
