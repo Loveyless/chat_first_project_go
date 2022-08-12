@@ -4,6 +4,16 @@ server.go   一些配置项
 user.go   用户的一些操作
 ```
 
+
+## v.09客户端实现
+
+1. 建立连接
+  创建一个client.go 来建立连接
+  首先```go run ./main.go server.go user.go```
+  然后```go run ./client.go```
+
+
+
 ## v.08私聊功能
 消息格式 to|xxname|messages
 表示私聊发给xxname

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"strings"
 )
@@ -21,8 +22,9 @@ type User struct {
 //上线功能
 func (u *User) Online() {
 	u.Server.maplock.Lock() //先锁 不太明白 弹幕说这里的map不是线程安全的 不过查到好像加锁就是安全的了
-	//2.添加用户到map
+	//添加用户到map
 	u.Server.OnlienMap[u.Name] = u
+	fmt.Println(u.Name + " Online !")
 	u.Server.maplock.Unlock() //解锁 关于安全map的说明 https://zhuanlan.zhihu.com/p/449078860
 
 	//广播上线消息
@@ -33,8 +35,9 @@ func (u *User) Online() {
 func (u *User) Offline() {
 
 	u.Server.maplock.Lock() //先锁 不太明白 弹幕说这里的map不是线程安全的 不过查到好像加锁就是安全的了
-	//2.添加用户到map
+	//删除用户
 	delete(u.Server.OnlienMap, u.Name)
+	fmt.Println(u.Name + " Offline !")
 	u.Server.maplock.Unlock() //解锁 关于安全map的说明 https://zhuanlan.zhihu.com/p/449078860
 
 	//广播下线消息
