@@ -16,6 +16,8 @@ user.go   用户的一些操作
 
 2. 命令行解析
 
+2. 菜单显示
+
 
 ## v.08私聊功能
 消息格式 to|xxname|messages
