@@ -8,15 +8,22 @@ user.go   用户的一些操作
 ## v.09客户端实现
 
 1. 建立连接
-  创建一个client.go 来建立连接
-
-  首先```go run ./main.go server.go user.go```
-
-  然后```go run ./client.go```
+- 创建一个client.go 来建立连接
+- 首先```go run ./main.go server.go user.go```
+- 然后```go run ./client.go```
 
 2. 命令行解析
+- 可以解析命令行输入
 
-2. 菜单显示
+
+3. 菜单显示
+- 首先```go run ./main.go server.go user.go```
+- 然后```go run client.go -ip 127.0.0.1 -port 8000```
+
+4. 更新用户名
+- 输入3 开启更改用户名 输入用户名
+- 开goroutine监听服务器返回输出
+
 
 
 ## v.08私聊功能

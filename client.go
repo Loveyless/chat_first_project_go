@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"os"
 )
 
 //建立连接类
@@ -54,10 +56,38 @@ func (client *Client) Run() {
 			//私聊
 		case 3:
 			//更新用户名
-
+			client.UpdateName()
 		}
 	}
 	fmt.Println("结束", client.flag)
+}
+
+//处理server回应的消息 直接显示到标准输出
+func (client *Client) DealResponse() {
+	//简写方法 io.Copy会阻塞 等待conn
+	//一旦有消息 就直接copy到标准输出上 永久阻塞监听(永久阻塞)
+	io.Copy(os.Stdout, client.conn)
+	//等价于
+	// for {
+	// 	buf := make([]byte, 4096)
+	// 	client.conn.Read(buf)
+	// 	fmt.Println(string(buf))
+	// }
+}
+
+func (client *Client) UpdateName() bool {
+	fmt.Println(">>> please import New name")
+	fmt.Scanln(&client.Name)
+
+	sendMsg := "rename|" + client.Name + "\n"
+	//write将数据写入连接
+	_, err := client.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("conn.Write err:", err)
+		return false
+	}
+	//如果改变成功 服务器还会输出更改成功 应该用一个go程来接收服务器的消息
+	return true
 }
 
 //构造函数
@@ -104,6 +134,9 @@ func main() {
 		fmt.Println(">>>>>>>client server err......")
 		return
 	}
+
+	//单独开启goroutine 接收消息
+	go client.DealResponse()
 
 	fmt.Println(">>>>>>>client server success......")
 
