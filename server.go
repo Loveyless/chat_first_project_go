@@ -98,7 +98,7 @@ func (s *Server) Hander(conn net.Conn) {
 			//说明当前用户活跃
 			//这里有个技巧 如果isLive执行 那么下面的<-time.After(time.Second * 10):也会执行
 			//time.After()会重置定时器 活跃就重置 不一定能进去 但是会执行case的语句
-		case <-time.After(time.Second * 20): //go中的定时器
+		case <-time.After(time.Second * 60): //go中的定时器
 
 			//已经超时 将当前User强制关闭
 			user.C <- "You have been kicked"

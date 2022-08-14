@@ -55,6 +55,7 @@ func (client *Client) Run() {
 			client.PublicChat()
 		case 2:
 			//私聊
+			client.PrivateChat()
 		case 3:
 			//更新用户名
 			client.UpdateName()
@@ -76,6 +77,61 @@ func (client *Client) DealResponse() {
 	// }
 }
 
+//查询在线用户
+func (client *Client) SelectUsers() {
+	msg := "who\n"
+	_, err := client.conn.Write([]byte(msg))
+	if err != nil {
+		fmt.Println("conn write err:", err)
+	}
+}
+
+//私聊模式 需要先查询在线用户SelectUsers
+func (client *Client) PrivateChat() {
+	//查询当前在线用户
+	client.SelectUsers()
+	var remoteName string
+	var chatMessage string
+	fmt.Println(">>>>please import username , import exit quit")
+	fmt.Scanln(&remoteName)
+
+	//如果成功输入姓名
+	for remoteName != "exit" {
+
+		fmt.Println("please import message , import exit quit")
+		fmt.Scanln(&chatMessage)
+
+		//成功输入内容
+		for chatMessage != "exit" {
+
+			//判断是否为空
+			if len(chatMessage) != 0 {
+
+				chatMessage = "to|" + remoteName + "|" + chatMessage + "\n"
+				_, err := client.conn.Write([]byte(chatMessage))
+				if err != nil {
+					fmt.Println("write err:", err)
+					break
+				}
+
+			}
+
+			//发完在提示用户继续输入消息 !!!但是这里exit退出不了 但是公聊可以 因为这个外面套了一个for来选对谁私聊
+			chatMessage = ""
+			// fmt.Println("please import message , import exit quit")
+			fmt.Scanln(&chatMessage)
+
+		}
+
+	}
+
+	//不发了就重新选对象
+	remoteName = ""
+	fmt.Println(">>>>please import username , import exit quit")
+	fmt.Scanln(&remoteName)
+
+}
+
 func (client *Client) PublicChat() {
 	//提示用户输入消息
 	var msg string
@@ -95,7 +151,7 @@ func (client *Client) PublicChat() {
 
 		//因为要一直接收 直到输入exit
 		msg = ""
-		fmt.Println(">>>>please import message , import exit quit")
+		// fmt.Println(">>>>please import message , import exit quit")
 		fmt.Scanln(&msg)
 
 	}

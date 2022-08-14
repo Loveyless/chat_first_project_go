@@ -29,6 +29,12 @@ user.go   用户的一些操作
 - exit退出私聊模式
 
 
+6. 私聊模式
+- client的PrivateChat方法
+- 发消息的时候exit退出不了 但是公聊可以 因为这个外面套了一个for来选对谁私聊
+
+
+
 ## v.08私聊功能
 消息格式 to|xxname|messages
 表示私聊发给xxname
