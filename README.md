@@ -24,6 +24,9 @@ user.go   用户的一些操作
 - 输入3 开启更改用户名 输入用户名
 - 开goroutine监听服务器返回输出
 
+5. 公聊模式
+- client的PublicChat方法
+- exit退出私聊模式
 
 
 ## v.08私聊功能

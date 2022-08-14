@@ -52,6 +52,7 @@ func (client *Client) Run() {
 		switch client.flag {
 		case 1:
 			//公聊
+			client.PublicChat()
 		case 2:
 			//私聊
 		case 3:
@@ -73,6 +74,31 @@ func (client *Client) DealResponse() {
 	// 	client.conn.Read(buf)
 	// 	fmt.Println(string(buf))
 	// }
+}
+
+func (client *Client) PublicChat() {
+	//提示用户输入消息
+	var msg string
+	fmt.Println(">>>>please import message , import exit quit")
+	fmt.Scanln(&msg)
+	//发给服务器
+	for msg != "exit" {
+
+		if len(msg) != 0 {
+			msg = msg + "\n"
+			_, err := client.conn.Write([]byte(msg))
+			if err != nil {
+				fmt.Println("write err:", err)
+				break
+			}
+		}
+
+		//因为要一直接收 直到输入exit
+		msg = ""
+		fmt.Println(">>>>please import message , import exit quit")
+		fmt.Scanln(&msg)
+
+	}
 }
 
 func (client *Client) UpdateName() bool {
